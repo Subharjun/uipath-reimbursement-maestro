@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "id": "ContainsSubjectEvaluator",
+  "evaluatorTypeId": "uipath-contains",
+  "description": "Checks the deterministic email subject contains the expected status/keywords (LLM note is not scored).",
+  "evaluatorConfig": {
+    "name": "ContainsSubjectEvaluator",
+    "targetOutputKey": "subject"
+  }
+}

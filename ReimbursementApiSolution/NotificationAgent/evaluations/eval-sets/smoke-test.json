@@ -1,0 +1,58 @@
+{
+  "version": "1.0",
+  "id": "smoke-test",
+  "name": "NotificationAgent Smoke Test",
+  "evaluatorRefs": ["ContainsSubjectEvaluator"],
+  "evaluations": [
+    {
+      "id": "test-1-paid",
+      "name": "Paid payout -> 'paid' subject",
+      "inputs": {
+        "employee_email": "subharjun.bose12@gmail.com",
+        "employee_name": "Subharjun Bose",
+        "case_id": "1085",
+        "payout_status": "succeeded",
+        "payment_status": "payout_initiated",
+        "amount": 228.92,
+        "currency": "USD",
+        "expense_type": "travel",
+        "vendor": "Pita Pita",
+        "save_as_draft": true
+      },
+      "mockingStrategy": {
+        "type": "mockito",
+        "config": [
+          { "function": "gmail_send", "then": [ { "type": "return", "value": { "id": "mock-msg-paid" } } ] }
+        ]
+      },
+      "evaluationCriterias": {
+        "ContainsSubjectEvaluator": { "searchText": "paid" }
+      }
+    },
+    {
+      "id": "test-2-processing",
+      "name": "Pending payout -> 'processing' subject",
+      "inputs": {
+        "employee_email": "subharjun.bose12@gmail.com",
+        "employee_name": "Asha Rao",
+        "case_id": "2090",
+        "payout_status": "",
+        "payment_status": "",
+        "amount": 75.0,
+        "currency": "USD",
+        "expense_type": "food",
+        "vendor": "Cafe Coffee Day",
+        "save_as_draft": true
+      },
+      "mockingStrategy": {
+        "type": "mockito",
+        "config": [
+          { "function": "gmail_send", "then": [ { "type": "return", "value": { "id": "mock-msg-processing" } } ] }
+        ]
+      },
+      "evaluationCriterias": {
+        "ContainsSubjectEvaluator": { "searchText": "is being processed" }
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "ReimbursementClassificationAgent",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "d1b5ba8a-6e5a-4fda-99a8-0dc13728ade6",
+    "isOverridable": true,
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "ReimbursementClassificationAgent"
+    },
+    "locks": [],
+    "key": "c2ab5a4d-c336-4476-aa8b-17fa627236a4",
+    "files": []
+  }
+}

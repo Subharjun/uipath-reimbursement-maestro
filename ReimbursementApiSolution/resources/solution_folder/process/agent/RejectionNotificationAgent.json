@@ -1,0 +1,38 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "RejectionNotificationAgent",
+    "kind": "process",
+    "type": "agent",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "ec50d48b-f09c-459b-89c6-c70b4fe553d9",
+    "isOverridable": true,
+    "dependencies": [
+      {
+        "kind": "package",
+        "name": "RejectionNotificationAgent"
+      }
+    ],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "type": "Agent",
+      "name": "RejectionNotificationAgent",
+      "package": {
+        "key": "2390d0c4-83a5-4acb-9e41-eee24e86028a"
+      },
+      "targetFrameworkValue": "Portable",
+      "retentionAction": "Delete",
+      "retentionPeriod": 30,
+      "staleRetentionAction": "Delete",
+      "staleRetentionPeriod": 180
+    },
+    "locks": [],
+    "key": "2e69b667-99cc-4f29-b0f2-05b2075819b2",
+    "files": []
+  }
+}

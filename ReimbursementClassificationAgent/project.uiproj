@@ -1,0 +1,6 @@
+{
+  "ProjectType": "Agent",
+  "Name": "ReimbursementClassificationAgent",
+  "Description": "AgentHack Track 1 - Stage 3 Reimbursement Classification External Agent (expense type, business purpose, risk scoring)",
+  "MainFile": null
+}

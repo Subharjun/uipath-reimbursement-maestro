@@ -1,0 +1,38 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "StripePayoutWorkflow",
+    "kind": "process",
+    "type": "api",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "ac79cdcc-a4ce-435d-bd82-8c388fd3b27a",
+    "isOverridable": true,
+    "dependencies": [
+      {
+        "kind": "package",
+        "name": "StripePayoutWorkflow"
+      }
+    ],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "type": "Api",
+      "name": "StripePayoutWorkflow",
+      "package": {
+        "key": "5241069e-96be-4086-ab1a-dc9c765fc628"
+      },
+      "targetFrameworkValue": "Portable",
+      "retentionAction": "Delete",
+      "retentionPeriod": 30,
+      "staleRetentionAction": "Delete",
+      "staleRetentionPeriod": 180
+    },
+    "locks": [],
+    "key": "ee24e257-bdf7-4ad7-b3f2-87e4831fd5a3",
+    "files": []
+  }
+}

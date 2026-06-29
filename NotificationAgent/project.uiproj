@@ -1,0 +1,6 @@
+{
+  "ProjectType": "Agent",
+  "Name": "NotificationAgent",
+  "Description": "AgentHack Stage 6 - reimbursement notification LangGraph agent",
+  "MainFile": null
+}

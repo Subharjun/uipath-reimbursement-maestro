@@ -1,0 +1,45 @@
+# ─── Secrets & local credentials (NEVER commit) ───
+**/.env
+**/.auth
+.uipath/.auth
+# UiPath local-run overwrites carry real tenant/connection/folder IDs
+**/__uipath/*
+!**/__uipath/uipath.json.example
+**/.uipath/
+
+# ─── Private working notes (contain tenant/connection IDs) ───
+HANDOFF.md
+SESSION_CONTEXT.md
+
+# ─── Local run outputs / eval artifacts ───
+**/notify_out.json
+**/eval-results.json
+**/out*.json
+**/sample_*.json
+
+# ─── Python / coded-agent envs (regenerate with `uip codedagent setup`) ───
+**/.venv/
+**/__pycache__/
+*.pyc
+
+# ─── Node / web app (regenerate with `npm install` / `npm run build`) ───
+**/node_modules/
+**/dist/
+
+# ─── Build output (regenerate with `uip solution pack`) ───
+build/
+*.nupkg
+# The packed Case nupkg embeds a Stripe key — ship only the scrubbed unpacked source
+MaestroCase/_package_download/
+
+# ─── Source decks / reference material (not code) ───
+*.pptx
+*.tex
+AgentHack_Reimbursement_Plan.pdf
+*.png
+
+# ─── OS / editor junk ───
+.DS_Store
+*.swp
+.idea/
+.vscode/

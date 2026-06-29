@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "id": "smoke-test",
+  "name": "RejectionNotificationAgent Smoke Test",
+  "evaluatorRefs": ["ContainsSubjectEvaluator"],
+  "evaluations": [
+    {
+      "id": "test-1-rejected",
+      "name": "Reject -> 'not approved' subject",
+      "inputs": {
+        "employee_email": "subharjun.bose12@gmail.com",
+        "employee_name": "Subharjun Bose",
+        "case_id": "1085",
+        "expense_type": "travel",
+        "vendor": "Pita Pita",
+        "amount": 228.92,
+        "currency": "USD",
+        "risk_score": "High",
+        "classification_confidence": "Low",
+        "reviewer_notes": "Receipt does not match the claimed travel dates.",
+        "save_as_draft": true
+      },
+      "mockingStrategy": {
+        "type": "mockito",
+        "config": [
+          { "function": "gmail_send", "then": [ { "type": "return", "value": { "id": "mock-msg-reject-1" } } ] }
+        ]
+      },
+      "evaluationCriterias": {
+        "ContainsSubjectEvaluator": { "searchText": "not approved" }
+      }
+    },
+    {
+      "id": "test-2-rejected-no-notes",
+      "name": "Reject without reviewer notes -> still 'not approved'",
+      "inputs": {
+        "employee_email": "subharjun.bose12@gmail.com",
+        "employee_name": "Asha Rao",
+        "case_id": "2090",
+        "expense_type": "food",
+        "vendor": "Cafe Coffee Day",
+        "amount": 75.0,
+        "currency": "USD",
+        "save_as_draft": true
+      },
+      "mockingStrategy": {
+        "type": "mockito",
+        "config": [
+          { "function": "gmail_send", "then": [ { "type": "return", "value": { "id": "mock-msg-reject-2" } } ] }
+        ]
+      },
+      "evaluationCriterias": {
+        "ContainsSubjectEvaluator": { "searchText": "not approved" }
+      }
+    }
+  ]
+}

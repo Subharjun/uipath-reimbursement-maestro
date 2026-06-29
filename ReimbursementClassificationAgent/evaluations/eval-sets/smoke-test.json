@@ -1,0 +1,113 @@
+{
+  "version": "1.0",
+  "id": "smoke-test",
+  "name": "Stage 3 Classification Smoke Test",
+  "evaluatorRefs": ["JsonSimilarityEvaluator"],
+  "evaluations": [
+    {
+      "id": "test-travel-high",
+      "name": "Travel, high amount, no document -> High risk",
+      "inputs": {
+        "case_id": "CLASS-TEST-001",
+        "source_email_body": "Please approve my travel to Delhi for client meeting",
+        "vendor": "IndiGo Airlines",
+        "date": "2026-03-11",
+        "amount": 7000,
+        "currency": "INR",
+        "document_attached": false,
+        "ocr_confidence": null,
+        "employee_email": "test@company.com"
+      },
+      "evaluationCriterias": {
+        "JsonSimilarityEvaluator": {
+          "expectedOutput": {
+            "case_id": "CLASS-TEST-001",
+            "expense_type": "travel",
+            "risk_score": "High",
+            "duplicate_detected": false,
+            "business_purpose_valid": true
+          }
+        }
+      }
+    },
+    {
+      "id": "test-food-low",
+      "name": "Food, small amount -> Low risk",
+      "inputs": {
+        "case_id": "CLASS-TEST-002",
+        "source_email_body": "Snacks during office work",
+        "vendor": "Office Cafeteria",
+        "date": "2026-06-04",
+        "amount": 500,
+        "currency": "INR",
+        "document_attached": false,
+        "ocr_confidence": null,
+        "employee_email": "test@company.com"
+      },
+      "evaluationCriterias": {
+        "JsonSimilarityEvaluator": {
+          "expectedOutput": {
+            "case_id": "CLASS-TEST-002",
+            "expense_type": "food",
+            "risk_score": "Low",
+            "duplicate_detected": false,
+            "business_purpose_valid": true
+          }
+        }
+      }
+    },
+    {
+      "id": "test-others-high",
+      "name": "Ambiguous gaming -> others / High / invalid purpose",
+      "inputs": {
+        "case_id": "CLASS-TEST-003",
+        "source_email_body": "Gaming equipment purchase for entertainment",
+        "vendor": "Game Store",
+        "date": "2026-03-09",
+        "amount": 2000,
+        "currency": "INR",
+        "document_attached": false,
+        "ocr_confidence": null,
+        "employee_email": "test@company.com"
+      },
+      "evaluationCriterias": {
+        "JsonSimilarityEvaluator": {
+          "expectedOutput": {
+            "case_id": "CLASS-TEST-003",
+            "expense_type": "others",
+            "risk_score": "High",
+            "duplicate_detected": false,
+            "business_purpose_valid": false
+          }
+        }
+      }
+    },
+    {
+      "id": "test-duplicate-override",
+      "name": "Duplicate flagged upstream -> forced High + duplicate factor",
+      "inputs": {
+        "case_id": "CLASS-TEST-004",
+        "source_email_body": "Lunch with the project team at the office",
+        "vendor": "Cafeteria",
+        "date": "2026-06-02",
+        "amount": 400,
+        "currency": "INR",
+        "document_attached": true,
+        "ocr_confidence": 0.95,
+        "employee_email": "test@company.com",
+        "duplicate_detected": true
+      },
+      "evaluationCriterias": {
+        "JsonSimilarityEvaluator": {
+          "expectedOutput": {
+            "case_id": "CLASS-TEST-004",
+            "expense_type": "food",
+            "risk_score": "High",
+            "duplicate_detected": true,
+            "business_purpose_valid": true
+          }
+        }
+      }
+    }
+  ]
+}

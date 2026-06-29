@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "id": "JsonSimilarityEvaluator",
+  "evaluatorTypeId": "uipath-json-similarity",
+  "description": "Output-based evaluator for the Stage 3 classification contract. Compares the stable output fields; the timestamped audit_entry and order-dependent risk_factors are intentionally omitted (extra keys in the actual output are ignored).",
+  "evaluatorConfig": {
+    "name": "JsonSimilarityEvaluator",
+    "defaultEvaluationCriteria": {
+      "expectedOutput": {}
+    }
+  }
+}

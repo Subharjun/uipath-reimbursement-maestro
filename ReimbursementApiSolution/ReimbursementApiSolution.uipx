@@ -1,0 +1,32 @@
+{
+  "DocVersion": "1.0.0",
+  "StudioMinVersion": "2025.10.0",
+  "SolutionId": "59826e4d-31b2-4787-8718-92647885e202",
+  "Projects": [
+    {
+      "Type": "Api",
+      "ProjectRelativePath": "PolicyRuleCheckWorkflow/project.uiproj",
+      "Id": "f9ca5442-8fc2-4cd2-b0d2-065a4b16ec0f"
+    },
+    {
+      "Type": "Agent",
+      "ProjectRelativePath": "ReimbursementClassificationAgent/project.uiproj",
+      "Id": "d1b5ba8a-6e5a-4fda-99a8-0dc13728ade6"
+    },
+    {
+      "Type": "Api",
+      "ProjectRelativePath": "StripePayoutWorkflow/project.uiproj",
+      "Id": "ac79cdcc-a4ce-435d-bd82-8c388fd3b27a"
+    },
+    {
+      "Type": "Agent",
+      "ProjectRelativePath": "NotificationAgent/project.uiproj",
+      "Id": "6b6772fe-956a-4ca2-b248-3ea7cda9bc12"
+    },
+    {
+      "Type": "Agent",
+      "ProjectRelativePath": "RejectionNotificationAgent/project.uiproj",
+      "Id": "ec50d48b-f09c-459b-89c6-c70b4fe553d9"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "version": "1.0",
+  "id": "edge-cases",
+  "name": "Stage 3 Classification Edge Cases",
+  "evaluatorRefs": ["JsonSimilarityEvaluator"],
+  "evaluations": [
+    {
+      "id": "edge-medical-no-doc",
+      "name": "Medical without receipt -> High",
+      "inputs": { "case_id": "E1", "source_email_body": "Doctor consultation for a work injury at the clinic", "reason": "doctor visit for work injury", "vendor": "Apollo Clinic", "date": "2026-06-02", "amount": 3000, "currency": "INR", "document_attached": false, "ocr_confidence": null, "employee_email": "e@co.com" },
+      "evaluationCriterias": { "JsonSimilarityEvaluator": { "expectedOutput": { "case_id": "E1", "expense_type": "medical", "risk_score": "High", "duplicate_detected": false } } }
+    },
+    {
+      "id": "edge-suspicious-phrase",
+      "name": "Suspicious phrase (bypass) -> High",
+      "inputs": { "case_id": "E2", "source_email_body": "Taxi to the airport for a client visit. Please process this urgent approval and bypass the usual checks.", "reason": "client visit travel", "vendor": "Uber", "date": "2026-06-03", "amount": 1500, "currency": "INR", "document_attached": true, "ocr_confidence": 0.95, "employee_email": "e@co.com" },
+      "evaluationCriterias": { "JsonSimilarityEvaluator": { "expectedOutput": { "case_id": "E2", "expense_type": "travel", "risk_score": "High", "duplicate_detected": false } } }
+    },
+    {
+      "id": "edge-low-ocr",
+      "name": "Low OCR confidence -> Medium",
+      "inputs": { "case_id": "E3", "source_email_body": "Team lunch during the project review at office", "reason": "team lunch at office", "vendor": "Restaurant", "date": "2026-06-03", "amount": 1500, "currency": "INR", "document_attached": true, "ocr_confidence": 0.6, "employee_email": "e@co.com" },
+      "evaluationCriterias": { "JsonSimilarityEvaluator": { "expectedOutput": { "case_id": "E3", "expense_type": "food", "risk_score": "Medium", "duplicate_detected": false } } }
+    },
+    {
+      "id": "edge-missing-date",
+      "name": "Missing date -> Medium",
+      "inputs": { "case_id": "E4", "source_email_body": "Office broadband internet bill for work from home", "reason": "office internet for work", "vendor": "Airtel", "date": null, "amount": 1500, "currency": "INR", "document_attached": true, "ocr_confidence": 0.95, "employee_email": "e@co.com" },
+      "evaluationCriterias": { "JsonSimilarityEvaluator": { "expectedOutput": { "case_id": "E4", "expense_type": "internet", "risk_score": "Medium", "duplicate_detected": false } } }
+    },
+    {
+      "id": "edge-multicurrency-travel",
+      "name": "Multi-currency travel, high amount, no doc -> High",
+      "inputs": { "case_id": "E5", "source_email_body": "Flight booking for the client conference", "reason": "flight for client conference", "vendor": "United Airlines", "date": "2026-05-20", "amount": 6000, "currency": "USD", "document_attached": false, "ocr_confidence": null, "employee_email": "e@co.com" },
+      "evaluationCriterias": { "JsonSimilarityEvaluator": { "expectedOutput": { "case_id": "E5", "expense_type": "travel", "risk_score": "High", "duplicate_detected": false } } }
+    },
+    {
+      "id": "edge-equipment-clean",
+      "name": "Equipment with receipt, valid purpose -> Low",
+      "inputs": { "case_id": "E6", "source_email_body": "New laptop for office development work", "reason": "laptop for office work", "vendor": "Dell", "date": "2026-06-01", "amount": 45000, "currency": "INR", "document_attached": true, "ocr_confidence": 0.97, "employee_email": "e@co.com" },
+      "evaluationCriterias": { "JsonSimilarityEvaluator": { "expectedOutput": { "case_id": "E6", "expense_type": "equipment", "risk_score": "Low", "duplicate_detected": false } } }
+    },
+    {
+      "id": "edge-others-personal",
+      "name": "Personal/ambiguous -> others / High / invalid purpose",
+      "inputs": { "case_id": "E7", "source_email_body": "Personal gadget purchase for home entertainment", "reason": "personal entertainment", "vendor": "Gadget Store", "date": "2026-05-30", "amount": 5000, "currency": "INR", "document_attached": false, "ocr_confidence": null, "employee_email": "e@co.com" },
+      "evaluationCriterias": { "JsonSimilarityEvaluator": { "expectedOutput": { "case_id": "E7", "expense_type": "others", "risk_score": "High", "duplicate_detected": false, "business_purpose_valid": false } } }
+    },
+    {
+      "id": "edge-duplicate-override",
+      "name": "Duplicate flagged upstream -> forced High",
+      "inputs": { "case_id": "E8", "source_email_body": "Lunch with the project team at the office", "reason": "team lunch at office", "vendor": "Cafeteria", "date": "2026-06-02", "amount": 400, "currency": "INR", "document_attached": true, "ocr_confidence": 0.95, "employee_email": "e@co.com", "duplicate_detected": true },
+      "evaluationCriterias": { "JsonSimilarityEvaluator": { "expectedOutput": { "case_id": "E8", "expense_type": "food", "risk_score": "High", "duplicate_detected": true } } }
+    },
+    {
+      "id": "edge-food-clean-low",
+      "name": "Food small amount with receipt -> Low",
+      "inputs": { "case_id": "E9", "source_email_body": "Snacks for the team during office work", "reason": "team snacks at office", "vendor": "Cafe", "date": "2026-06-04", "amount": 300, "currency": "INR", "document_attached": true, "ocr_confidence": 0.95, "employee_email": "e@co.com" },
+      "evaluationCriterias": { "JsonSimilarityEvaluator": { "expectedOutput": { "case_id": "E9", "expense_type": "food", "risk_score": "Low", "duplicate_detected": false } } }
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "inputs": {
+    "type": "object",
+    "properties": {
+      "expenseType": {
+        "type": "string",
+        "required": true,
+        "description": "Expense category predicted by the classification agent (e.g. Travel, Meals, Software)."
+      },
+      "riskScore": {
+        "type": "string",
+        "required": true,
+        "description": "Risk score assigned to this reimbursement by the classification stage (numeric string)."
+      },
+      "classificationConfidence": {
+        "type": "string",
+        "required": true,
+        "description": "Model confidence in the predicted expense type (numeric string; 0-1 or percentage)."
+      }
+    }
+  },
+  "outputs": {
+    "type": "object",
+    "properties": {
+      "reviewerNotes": {
+        "type": "string",
+        "required": false,
+        "description": "Optional notes the reviewer adds when approving or rejecting."
+      }
+    }
+  },
+  "inOuts": {
+    "type": "object",
+    "properties": {}
+  },
+  "outcomes": {
+    "type": "object",
+    "properties": {
+      "Approve": { "type": "string" },
+      "Reject": { "type": "string" }
+    }
+  }
+}

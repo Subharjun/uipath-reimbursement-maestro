@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "description": "Shared Maestro Case record schema for AgentHack Track 1 - Reimbursement. Agreed by all (Day 2 deliverable). Each stage writes only its own block. Field names are a contract - do not rename.",
+
+  "case_id": "string - REIMB-2026-<timestamp>, minted at Stage 1",
+  "created_at": "string - ISO8601, Stage 1",
+  "status": "string enum - intake | classified | policy_checked | pending_review | approved | rejected | paid | closed",
+
+  "intake": {
+    "_owner": "Rashmi (Stage 1)",
+    "employee_email": "string - sender email",
+    "manager_email": "string",
+    "source_channel": "string enum - email | portal | slack | mobile",
+    "source_email_body": "string - raw email body",
+    "received_at": "string - ISO8601"
+  },
+
+  "extraction": {
+    "_owner": "Rashmi (Stage 2 - IDP/DU)",
+    "vendor": "string - may be null",
+    "date": "string - YYYY-MM-DD, may be null",
+    "amount": "number - may be 0",
+    "currency": "string - default INR",
+    "document_attached": "boolean - IDP confidence > 0.85",
+    "ocr_confidence": "number - 0..1, may be null",
+    "line_items": "array - optional"
+  },
+
+  "classification": {
+    "_owner": "Subharjun (Stage 3)",
+    "expense_type_confirmed": "string enum - travel | food | medical | internet | equipment | others",
+    "risk_score": "string enum - Low | Medium | High",
+    "duplicate_detected": "boolean",
+    "business_purpose_valid": "boolean",
+    "risk_factors": "array of strings",
+    "classification_confidence": "string enum - High | Medium | Low"
+  },
+
+  "policy": {
+    "_owner": "Mir (Stage 4)",
+    "within_spend_limit": "boolean",
+    "within_date_window": "boolean",
+    "preapproval_ok": "boolean",
+    "routing_decision": "string enum - auto_approve | manager_review | reject",
+    "policy_violations": "array of strings"
+  },
+
+  "review": {
+    "_owner": "Mir (Stage 5 - Action Center)",
+    "reviewer": "string",
+    "decision": "string enum - approved | rejected | query",
+    "decision_reason": "string",
+    "decided_at": "string - ISO8601"
+  },
+
+  "payment": {
+    "_owner": "Subharjun (Stage 5a) / Avishek notify (Stage 6)",
+    "erp_system": "string - SAP Concur",
+    "erp_transaction_id": "string",
+    "concur_report_id": "string",
+    "payment_status": "string enum - submitted_to_concur | submission_failed | paid",
+    "payment_url": "string",
+    "submitted_at": "string - ISO8601"
+  },
+
+  "audit_trail": {
+    "_owner": "Mir (Maestro Case) - every stage appends",
+    "_type": "array of audit_entry objects",
+    "audit_entry": {
+      "timestamp": "string - ISO8601",
+      "stage": "string",
+      "stage_number": "number",
+      "actor": "string",
+      "actor_type": "string enum - agent | rpa | api_workflow | human",
+      "action": "string",
+      "details": "string"
+    }
+  }
+}

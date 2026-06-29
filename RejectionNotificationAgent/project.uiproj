@@ -1,0 +1,6 @@
+{
+  "ProjectType": "Agent",
+  "Name": "RejectionNotificationAgent",
+  "Description": "AgentHack - reimbursement CLASSIFICATION REJECT notifier (LangGraph agent)",
+  "MainFile": null
+}

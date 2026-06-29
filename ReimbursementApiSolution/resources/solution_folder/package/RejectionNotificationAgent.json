@@ -1,0 +1,23 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "RejectionNotificationAgent",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "ec50d48b-f09c-459b-89c6-c70b4fe553d9",
+    "isOverridable": true,
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "RejectionNotificationAgent"
+    },
+    "locks": [],
+    "key": "2390d0c4-83a5-4acb-9e41-eee24e86028a",
+    "files": []
+  }
+}

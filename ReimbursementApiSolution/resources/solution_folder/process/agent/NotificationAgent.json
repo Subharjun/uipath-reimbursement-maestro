@@ -1,0 +1,38 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "NotificationAgent",
+    "kind": "process",
+    "type": "agent",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "6b6772fe-956a-4ca2-b248-3ea7cda9bc12",
+    "isOverridable": true,
+    "dependencies": [
+      {
+        "kind": "package",
+        "name": "NotificationAgent"
+      }
+    ],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "type": "Agent",
+      "name": "NotificationAgent",
+      "package": {
+        "key": "fd6c5d9a-51e4-4ec7-9d68-58abc59d6e82"
+      },
+      "targetFrameworkValue": "Portable",
+      "retentionAction": "Delete",
+      "retentionPeriod": 30,
+      "staleRetentionAction": "Delete",
+      "staleRetentionPeriod": 180
+    },
+    "locks": [],
+    "key": "e40042f2-58d9-4cf2-a2e0-c36e2b4899f9",
+    "files": []
+  }
+}

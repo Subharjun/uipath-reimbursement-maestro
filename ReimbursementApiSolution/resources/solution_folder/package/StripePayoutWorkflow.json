@@ -1,0 +1,23 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "StripePayoutWorkflow",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "ac79cdcc-a4ce-435d-bd82-8c388fd3b27a",
+    "isOverridable": true,
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "StripePayoutWorkflow"
+    },
+    "locks": [],
+    "key": "5241069e-96be-4086-ab1a-dc9c765fc628",
+    "files": []
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "PolicyRuleCheckWorkflow",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "f9ca5442-8fc2-4cd2-b0d2-065a4b16ec0f",
+    "isOverridable": true,
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "PolicyRuleCheckWorkflow"
+    },
+    "locks": [],
+    "key": "02ff1f80-2196-43b6-93a1-ac21965ae55d",
+    "files": []
+  }
+}
