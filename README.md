@@ -44,10 +44,10 @@ hackathon cloud tenant as **serverless** jobs.
 | [`IntakeAndExtraction/`](IntakeAndExtraction/) | 1/2 — Intake & IDP | Cross-platform RPA bots: **email intake** (Gmail → receipt → bucket) and **receipt extraction** (Document Understanding → structured `out_JSON`). Run serverless. |
 | [`ReimbursementClassificationAgent/`](ReimbursementClassificationAgent/) | 3 — Classify | Coded **LangGraph** agent (gpt-4o via UiPath LLM Gateway + deterministic fallback). Classifies expense type, scores risk, detects duplicates. |
 | [`PolicyRuleCheckWorkflow/`](PolicyRuleCheckWorkflow/) | 4 — Policy | Deterministic **API workflow** that checks the claim against the policy DB and decides proceed / escalate. |
-| [`StripePayoutWorkflow/`](StripePayoutWorkflow/) | 5a — Payout | **API workflow** that disburses via **Stripe** (test mode): Customer → confirmed PaymentIntent → `succeeded`. |
-| [`NotificationAgent/`](NotificationAgent/) | 6 — Notify | Coded **LangGraph** agent: writes a warm note (LLM) and sends a polished **HTML email** via the Gmail connector on payout success. |
-| [`RejectionNotificationAgent/`](RejectionNotificationAgent/) | 6b — Reject | Sibling agent that emails the claimant a "not approved" message **including the rejection reason** when the reviewer rejects. |
 | [`classification-approval-app/`](classification-approval-app/) | 5 — HITL | **Coded Action App** (React/Vite) — the human-in-the-loop approval gate shown in Action Center (Approve / Reject + reviewer notes). |
+| [`StripePayoutWorkflow/`](StripePayoutWorkflow/) | 6 — Payout | **API workflow** that disburses via **Stripe** (test mode): Customer → confirmed PaymentIntent → `succeeded`. |
+| [`NotificationAgent/`](NotificationAgent/) | 7 — Notify | Coded **LangGraph** agent: writes a warm note (LLM) and sends a polished **HTML email** via the Gmail connector on payout success. |
+| [`RejectionNotificationAgent/`](RejectionNotificationAgent/) | 7b — Reject | Sibling agent that emails the claimant a "not approved" message **including the rejection reason** when the reviewer rejects. |
 | [`ReimbursementApiSolution/`](ReimbursementApiSolution/) | — | The **deployable solution** (`.uipx`) bundling Classify + Policy + Stripe + Notify + RejectNotify into one package. |
 | [`MaestroCase/`](MaestroCase/) | orchestration | The downloaded **Maestro Case** that wires all stages end-to-end (`_unpacked/content/caseplan.json` is the readable source). |
 | [`data/`](data/) | — | `mock_policy.json` (policy DB) + `case_schema.json`. |
@@ -84,7 +84,23 @@ uip login --authority "https://cloud.uipath.com/identity_" \
           --organization "<your-org>" --tenant "<your-tenant>"
 ```
 
-### 1. Coded agents (Classify / Notify / RejectNotify)
+### 1. Intake & extraction bots (Stage 1/2 — RPA)
+These are cross-platform (Portable) RPA processes that run **serverless** on Orchestrator.
+They need a **Gmail connection** (intake reads the inbox) and a **storage bucket** named
+`Receipt` (intake uploads, extraction downloads), plus a **Document Understanding** Receipts
+model for extraction.
+```bash
+# pack & upload each project, then create + start a serverless process
+uip rpa pack IntakeAndExtraction/ReimbursementIntakeBot ./build
+uip or packages upload ./build/<packed>.nupkg
+uip or processes create --name ReimbursementIntakeBot_XP --package-key <Id> --package-version <v> --folder-key <folder>
+uip or jobs start <process-key> --folder-key <folder> --runtime-type Serverless --wait-for-completion
+```
+> Run **IntakeBot first** (it fills the `Receipt` bucket), then ReceiptExtractor. ReceiptExtractor's
+> `Main.xaml` + DU bundle live inside the deployed tenant package — see
+> [`IntakeAndExtraction/README.md`](IntakeAndExtraction/README.md).
+
+### 2. Coded agents (Classify / Notify / RejectNotify)
 ```bash
 cd ReimbursementClassificationAgent
 uip codedagent setup --force        # recreates the .venv (not committed)
@@ -94,14 +110,14 @@ uip codedagent run agent --file <input.json>     # local run
 Stage 6 needs a Gmail connection — supply it via `__uipath/uipath.json` resourceOverwrites
 (`connectionId` + `folderKey`) or env `REIMBURSEMENT_GMAIL_CONNECTION_ID`.
 
-### 2. API workflows (Policy / Stripe)
+### 3. API workflows (Policy / Stripe)
 ```bash
 cd StripePayoutWorkflow
 uip api-workflow run ./StripePayoutWorkflow.json --no-auth \
   --input-arguments '{ "...case fields...", "stripe_secret_key": "sk_test_…" }'
 ```
 
-### 3. Approval Action App
+### 4. Approval Action App
 ```bash
 cd classification-approval-app
 npm install
@@ -110,7 +126,7 @@ uip codedapp pack dist -n classification-approval-app --version 0.0.3
 uip codedapp publish -t Action --name classification-approval-app --version 0.0.3
 ```
 
-### 4. The whole solution
+### 5. The whole solution
 ```bash
 uip solution pack ReimbursementApiSolution ./build --version <ver>
 uip solution publish ./build/ReimbursementApiSolution_<ver>.zip --tenant <tenant>
@@ -118,10 +134,11 @@ uip solution deploy run --package-name ReimbursementApiSolution --package-versio
   --name ReimbursementFullSolution --folder-name ReimbursementFullSolution --parent-folder-path Shared
 ```
 
-### 5. The Maestro Case
-Import `MaestroCase/_package_download/*.nupkg` into your tenant (or open
-`MaestroCase/_unpacked/content/caseplan.json` in Studio Web) and rebind the process references
-to your own deployed packages.
+### 6. The Maestro Case
+Open `MaestroCase/_unpacked/content/caseplan.json` in Studio Web (the readable Case source),
+rebind the process references to **your own** deployed packages, set your Stripe key
+(`sk_test_…`), then publish the Case. The original packed `.nupkg` is intentionally **not**
+committed — it embedded a Stripe test key, so rebuild it from this source against your tenant.
 
 ---
 
@@ -147,8 +164,9 @@ The field is `expense_type` (not `expense_type_confirmed`); the policy stage rou
 - **Stage 1/2** — email intake + receipt extraction (Document Understanding) ran Successful on serverless; the intake → bucket → extraction → `out_JSON` chain executes end-to-end.
 - **Stage 3** — smoke + edge eval sets pass; live cloud job Successful.
 - **Stage 4** — routing scenarios correct.
-- **Stage 5a** — **real Stripe test-mode payout** (PaymentIntent `succeeded`).
-- **Stage 6 / 6b** — real Gmail sends (HTML email, message id returned); evals 2/2.
+- **Stage 5** — human approval gate renders risk/confidence and captures Approve/Reject + reviewer notes in Action Center.
+- **Stage 6** — **real Stripe test-mode payout** (PaymentIntent `succeeded`).
+- **Stage 7 / 7b** — real Gmail sends (HTML email, message id returned) on both approve and reject paths; evals 2/2.
 - **Whole solution** — deployed + active on the tenant; serverless jobs Successful.
 
 ---
