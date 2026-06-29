@@ -41,6 +41,7 @@ hackathon cloud tenant as **serverless** jobs.
 
 | Path | Stage | What it is |
 |------|-------|------------|
+| [`IntakeAndExtraction/`](IntakeAndExtraction/) | 1/2 — Intake & IDP | Cross-platform RPA bots: **email intake** (Gmail → receipt → bucket) and **receipt extraction** (Document Understanding → structured `out_JSON`). Run serverless. |
 | [`ReimbursementClassificationAgent/`](ReimbursementClassificationAgent/) | 3 — Classify | Coded **LangGraph** agent (gpt-4o via UiPath LLM Gateway + deterministic fallback). Classifies expense type, scores risk, detects duplicates. |
 | [`PolicyRuleCheckWorkflow/`](PolicyRuleCheckWorkflow/) | 4 — Policy | Deterministic **API workflow** that checks the claim against the policy DB and decides proceed / escalate. |
 | [`StripePayoutWorkflow/`](StripePayoutWorkflow/) | 5a — Payout | **API workflow** that disburses via **Stripe** (test mode): Customer → confirmed PaymentIntent → `succeeded`. |
@@ -51,8 +52,9 @@ hackathon cloud tenant as **serverless** jobs.
 | [`MaestroCase/`](MaestroCase/) | orchestration | The downloaded **Maestro Case** that wires all stages end-to-end (`_unpacked/content/caseplan.json` is the readable source). |
 | [`data/`](data/) | — | `mock_policy.json` (policy DB) + `case_schema.json`. |
 
-> Stage 1/2 intake & receipt-extraction bots (RPA + Document Understanding) live on the tenant
-> as cross-platform serverless processes; the Case invokes them by process name.
+> The Case invokes the Stage 1/2 bots by process name; their source is under
+> [`IntakeAndExtraction/`](IntakeAndExtraction/). The classifier (Stage 3) consumes the
+> extractor's `out_JSON`.
 
 ---
 
