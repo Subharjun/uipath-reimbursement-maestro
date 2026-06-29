@@ -1,0 +1,249 @@
+{
+  "document": {
+    "dsl": "1.0.0",
+    "name": "SAPConcurPaymentWorkflow",
+    "version": "0.0.1",
+    "namespace": "default",
+    "metadata": {
+      "variables": {
+        "schema": {
+          "format": "json",
+          "document": { "type": "object", "properties": {}, "title": "Variables" }
+        }
+      }
+    }
+  },
+  "input": {
+    "schema": {
+      "format": "json",
+      "document": {
+        "type": "object",
+        "properties": {
+          "case_id": { "type": "string" },
+          "employee_email": { "type": "string" },
+          "manager_email": { "type": "string" },
+          "amount": { "type": "number" },
+          "currency": { "type": "string" },
+          "expense_type": { "type": "string" },
+          "vendor": { "type": "string" },
+          "date": { "type": "string" },
+          "reason": { "type": "string" },
+          "concur_base_url": { "type": "string" },
+          "concur_client_id": { "type": "string" },
+          "concur_client_secret": { "type": "string" },
+          "concur_user_id": { "type": "string" }
+        },
+        "title": "Inputs"
+      }
+    }
+  },
+  "output": {
+    "schema": {
+      "format": "json",
+      "document": {
+        "type": "object",
+        "properties": {
+          "case_id": { "type": "string" },
+          "erp_system": { "type": "string" },
+          "concur_report_id": { "type": "string" },
+          "concur_expense_type_id": { "type": "string" },
+          "payment_status": { "type": "string" },
+          "payment_url": { "type": "string" },
+          "submitted_at": { "type": "string" }
+        },
+        "title": "Outputs"
+      }
+    }
+  },
+  "do": [
+    {
+      "Sequence_1": {
+        "do": [
+          {
+            "WorkflowStart": {
+              "set": "${Object.entries($workflow.definition?.document?.metadata?.variables?.schema?.document?.properties || {}).reduce((acc, [name, def]) => ({ ...acc, [name]: def?.default }), {}) }",
+              "output": { "as": "${$input}" },
+              "export": { "as": "{ ...$context, variables: { ...$context.variables, ...$output } }" },
+              "metadata": { "activityType": "Assign", "displayName": "Workflow start", "fullName": "Assign", "isTransparent": true }
+            }
+          },
+          {
+            "MapType_1": {
+              "run": {
+                "script": {
+                  "language": "javascript",
+                  "code": "var m = { travel: 'AIRFR', food: 'MEALS', medical: 'MEDC1', internet: 'TELPH', equipment: 'EQUIP', others: 'MISCL' }; var t = ($workflow.input.expense_type || 'others'); return { concurExpenseTypeId: (m[t] || 'MISCL') };",
+                  "arguments": "${{ \"$context\": $context, \"$workflow\": $workflow, \"$input\": $input }}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"map_type\": $output } }" },
+              "metadata": { "activityType": "JsInvoke", "displayName": "Map expense_type to Concur expense type ID", "fullName": "JsInvoke" }
+            }
+          },
+          {
+            "HttpRequest_Token": {
+              "call": "UiPath.Http",
+              "with": {
+                "connector": "uipath-uipath-http",
+                "connectionId": "ImplicitConnection",
+                "connectionResourceId": "ImplicitConnection",
+                "method": "POST",
+                "endpoint": "/http-request",
+                "bodyParameters": {
+                  "authentication": "manual",
+                  "method": "POST",
+                  "url": "${$workflow.input.concur_base_url + '/oauth2/v0/token'}",
+                  "headers": { "Content-Type": "application/x-www-form-urlencoded" },
+                  "body": "${'client_id=' + encodeURIComponent($workflow.input.concur_client_id || '') + '&client_secret=' + encodeURIComponent($workflow.input.concur_client_secret || '') + '&grant_type=client_credentials'}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"token_request\": $output } }" },
+              "metadata": {
+                "fullName": "Connector",
+                "activityType": "Connector",
+                "displayName": "Concur OAuth - get access token",
+                "uiPathActivityTypeId": "5c4cc855-b42a-37e6-b910-de8588998fce",
+                "assemblyQualifiedName": "Connector",
+                "configuration": "{\"essentialConfiguration\":{\"connectorVersion\":\"\",\"executionType\":null,\"customFieldsRequestDetails\":null,\"instanceParameters\":{\"version\":\"1.0.0\",\"connectorKey\":\"uipath-uipath-http\",\"activityType\":\"Curated\",\"objectName\":\"http-request\",\"httpMethod\":\"POST\",\"operation\":null,\"eventOperation\":null,\"eventMode\":null,\"connectorObjects\":null,\"previewEndpoint\":null},\"objectName\":\"http-request\",\"operation\":null,\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/http-request\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_http-request\"}}"
+              }
+            }
+          },
+          {
+            "ExtractToken_1": {
+              "run": {
+                "script": {
+                  "language": "javascript",
+                  "code": "var r = $context.outputs.token_request; var c = (r && r.content) ? r.content : {}; return { accessToken: (c.access_token || c.accessToken || null) };",
+                  "arguments": "${{ \"$context\": $context, \"$workflow\": $workflow, \"$input\": $input }}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"extract_token\": $output } }" },
+              "metadata": { "activityType": "JsInvoke", "displayName": "Extract access token", "fullName": "JsInvoke" }
+            }
+          },
+          {
+            "HttpRequest_CreateReport": {
+              "call": "UiPath.Http",
+              "with": {
+                "connector": "uipath-uipath-http",
+                "connectionId": "ImplicitConnection",
+                "connectionResourceId": "ImplicitConnection",
+                "method": "POST",
+                "endpoint": "/http-request",
+                "bodyParameters": {
+                  "authentication": "manual",
+                  "method": "POST",
+                  "url": "${$workflow.input.concur_base_url + '/expensereports/v4/users/' + $workflow.input.concur_user_id + '/context/TRAVELER/reports'}",
+                  "headers": { "Content-Type": "application/json", "Authorization": "${'Bearer ' + ($context.outputs.extract_token ? $context.outputs.extract_token.accessToken : '')}" },
+                  "body": "${JSON.stringify({ reportName: 'Reimbursement - ' + ($workflow.input.expense_type || '') + ' - ' + ($workflow.input.case_id || ''), businessPurpose: ($workflow.input.reason || 'Reimbursement'), countryCode: 'IN', currencyCode: ($workflow.input.currency || 'INR'), startDate: ($workflow.input.date || ''), endDate: ($workflow.input.date || ''), comment: 'Auto-submitted by UiPath Maestro Case ' + ($workflow.input.case_id || '') + '. Vendor: ' + ($workflow.input.vendor || '') + '.' })}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"create_report\": $output } }" },
+              "metadata": {
+                "fullName": "Connector",
+                "activityType": "Connector",
+                "displayName": "Concur - create expense report",
+                "uiPathActivityTypeId": "5c4cc855-b42a-37e6-b910-de8588998fce",
+                "assemblyQualifiedName": "Connector",
+                "configuration": "{\"essentialConfiguration\":{\"connectorVersion\":\"\",\"executionType\":null,\"customFieldsRequestDetails\":null,\"instanceParameters\":{\"version\":\"1.0.0\",\"connectorKey\":\"uipath-uipath-http\",\"activityType\":\"Curated\",\"objectName\":\"http-request\",\"httpMethod\":\"POST\",\"operation\":null,\"eventOperation\":null,\"eventMode\":null,\"connectorObjects\":null,\"previewEndpoint\":null},\"objectName\":\"http-request\",\"operation\":null,\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/http-request\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_http-request\"}}"
+              }
+            }
+          },
+          {
+            "ExtractReport_1": {
+              "run": {
+                "script": {
+                  "language": "javascript",
+                  "code": "var r = $context.outputs.create_report; var c = (r && r.content) ? r.content : {}; return { concurReportId: (c.reportId || c.ID || c.id || null) };",
+                  "arguments": "${{ \"$context\": $context, \"$workflow\": $workflow, \"$input\": $input }}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"extract_report\": $output } }" },
+              "metadata": { "activityType": "JsInvoke", "displayName": "Extract Concur report ID", "fullName": "JsInvoke" }
+            }
+          },
+          {
+            "HttpRequest_AddExpense": {
+              "call": "UiPath.Http",
+              "with": {
+                "connector": "uipath-uipath-http",
+                "connectionId": "ImplicitConnection",
+                "connectionResourceId": "ImplicitConnection",
+                "method": "POST",
+                "endpoint": "/http-request",
+                "bodyParameters": {
+                  "authentication": "manual",
+                  "method": "POST",
+                  "url": "${$workflow.input.concur_base_url + '/expensereports/v4/users/' + $workflow.input.concur_user_id + '/context/TRAVELER/reports/' + ($context.outputs.extract_report ? $context.outputs.extract_report.concurReportId : '') + '/expenses'}",
+                  "headers": { "Content-Type": "application/json", "Authorization": "${'Bearer ' + ($context.outputs.extract_token ? $context.outputs.extract_token.accessToken : '')}" },
+                  "body": "${JSON.stringify({ expenseTypeId: $context.outputs.map_type.concurExpenseTypeId, transactionAmount: { value: ($workflow.input.amount || 0), currencyCode: ($workflow.input.currency || 'INR') }, transactionDate: ($workflow.input.date || ''), vendorDescription: ($workflow.input.vendor || ''), description: ($workflow.input.reason || '') })}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"add_expense\": $output } }" },
+              "metadata": {
+                "fullName": "Connector",
+                "activityType": "Connector",
+                "displayName": "Concur - add expense entry",
+                "uiPathActivityTypeId": "5c4cc855-b42a-37e6-b910-de8588998fce",
+                "assemblyQualifiedName": "Connector",
+                "configuration": "{\"essentialConfiguration\":{\"connectorVersion\":\"\",\"executionType\":null,\"customFieldsRequestDetails\":null,\"instanceParameters\":{\"version\":\"1.0.0\",\"connectorKey\":\"uipath-uipath-http\",\"activityType\":\"Curated\",\"objectName\":\"http-request\",\"httpMethod\":\"POST\",\"operation\":null,\"eventOperation\":null,\"eventMode\":null,\"connectorObjects\":null,\"previewEndpoint\":null},\"objectName\":\"http-request\",\"operation\":null,\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/http-request\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_http-request\"}}"
+              }
+            }
+          },
+          {
+            "HttpRequest_Submit": {
+              "call": "UiPath.Http",
+              "with": {
+                "connector": "uipath-uipath-http",
+                "connectionId": "ImplicitConnection",
+                "connectionResourceId": "ImplicitConnection",
+                "method": "POST",
+                "endpoint": "/http-request",
+                "bodyParameters": {
+                  "authentication": "manual",
+                  "method": "POST",
+                  "url": "${$workflow.input.concur_base_url + '/expensereports/v4/users/' + $workflow.input.concur_user_id + '/context/TRAVELER/reports/' + ($context.outputs.extract_report ? $context.outputs.extract_report.concurReportId : '') + '/submit'}",
+                  "headers": { "Content-Type": "application/json", "Authorization": "${'Bearer ' + ($context.outputs.extract_token ? $context.outputs.extract_token.accessToken : '')}" },
+                  "body": "${JSON.stringify({})}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"submit_report\": $output } }" },
+              "metadata": {
+                "fullName": "Connector",
+                "activityType": "Connector",
+                "displayName": "Concur - submit report for payment",
+                "uiPathActivityTypeId": "5c4cc855-b42a-37e6-b910-de8588998fce",
+                "assemblyQualifiedName": "Connector",
+                "configuration": "{\"essentialConfiguration\":{\"connectorVersion\":\"\",\"executionType\":null,\"customFieldsRequestDetails\":null,\"instanceParameters\":{\"version\":\"1.0.0\",\"connectorKey\":\"uipath-uipath-http\",\"activityType\":\"Curated\",\"objectName\":\"http-request\",\"httpMethod\":\"POST\",\"operation\":null,\"eventOperation\":null,\"eventMode\":null,\"connectorObjects\":null,\"previewEndpoint\":null},\"objectName\":\"http-request\",\"operation\":null,\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/http-request\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_http-request\"}}"
+              }
+            }
+          },
+          {
+            "BuildOutput_1": {
+              "run": {
+                "script": {
+                  "language": "javascript",
+                  "code": "var rid = ($context.outputs.extract_report ? $context.outputs.extract_report.concurReportId : null); var now = new Date(); return { case_id: ($workflow.input.case_id || ''), erp_system: 'SAP Concur', concur_report_id: rid, concur_expense_type_id: $context.outputs.map_type.concurExpenseTypeId, payment_status: 'submitted_to_concur', payment_url: 'https://www.concursolutions.com/expense/reports/' + rid, submitted_at: now.toISOString() };",
+                  "arguments": "${{ \"$context\": $context, \"$workflow\": $workflow, \"$input\": $input }}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"build_output\": $output } }" },
+              "metadata": { "activityType": "JsInvoke", "displayName": "Build Stage 5a payment output", "fullName": "JsInvoke" }
+            }
+          },
+          {
+            "Response_1": {
+              "response": "${$context.outputs.build_output}",
+              "markJobAsFailed": false,
+              "then": "end",
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"Response_1\": $output } }" },
+              "metadata": { "activityType": "Response", "displayName": "Return Stage 5a payment output", "fullName": "Response" }
+            }
+          }
+        ],
+        "metadata": { "activityType": "Sequence", "displayName": "Sequence", "fullName": "Sequence" }
+      }
+    }
+  ],
+  "evaluate": { "mode": "strict", "language": "javascript" }
+}

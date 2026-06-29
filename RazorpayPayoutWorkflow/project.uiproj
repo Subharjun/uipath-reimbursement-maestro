@@ -1,0 +1,6 @@
+{
+  "ProjectType": "Api",
+  "Name": "RazorpayPayoutWorkflow",
+  "Description": "AgentHack Track 1 - Stage 5a RazorpayX reimbursement payout (INR)",
+  "MainFile": "RazorpayPayoutWorkflow.json"
+}

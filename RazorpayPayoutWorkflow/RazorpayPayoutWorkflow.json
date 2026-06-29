@@ -1,0 +1,216 @@
+{
+  "document": {
+    "dsl": "1.0.0",
+    "name": "RazorpayPayoutWorkflow",
+    "version": "0.0.1",
+    "namespace": "default",
+    "metadata": { "variables": { "schema": { "format": "json", "document": { "type": "object", "properties": {}, "title": "Variables" } } } }
+  },
+  "input": {
+    "schema": {
+      "format": "json",
+      "document": {
+        "type": "object",
+        "properties": {
+          "case_id": { "type": "string" },
+          "employee_email": { "type": "string" },
+          "employee_name": { "type": "string" },
+          "employee_vpa": { "type": "string" },
+          "amount": { "type": "number" },
+          "currency": { "type": "string" },
+          "expense_type": { "type": "string" },
+          "reason": { "type": "string" },
+          "razorpay_key_id": { "type": "string" },
+          "razorpay_key_secret": { "type": "string" },
+          "razorpay_account_number": { "type": "string" }
+        },
+        "title": "Inputs"
+      }
+    }
+  },
+  "output": {
+    "schema": {
+      "format": "json",
+      "document": {
+        "type": "object",
+        "properties": {
+          "case_id": { "type": "string" },
+          "erp_system": { "type": "string" },
+          "contact_id": { "type": "string" },
+          "fund_account_id": { "type": "string" },
+          "payout_id": { "type": "string" },
+          "payout_status": { "type": "string" },
+          "payment_status": { "type": "string" },
+          "amount": { "type": "number" },
+          "currency": { "type": "string" },
+          "reference_id": { "type": "string" },
+          "submitted_at": { "type": "string" }
+        },
+        "title": "Outputs"
+      }
+    }
+  },
+  "do": [
+    {
+      "Sequence_1": {
+        "do": [
+          {
+            "WorkflowStart": {
+              "set": "${Object.entries($workflow.definition?.document?.metadata?.variables?.schema?.document?.properties || {}).reduce((acc, [name, def]) => ({ ...acc, [name]: def?.default }), {}) }",
+              "output": { "as": "${$input}" },
+              "export": { "as": "{ ...$context, variables: { ...$context.variables, ...$output } }" },
+              "metadata": { "activityType": "Assign", "displayName": "Workflow start", "fullName": "Assign", "isTransparent": true }
+            }
+          },
+          {
+            "BuildAuth_1": {
+              "run": {
+                "script": {
+                  "language": "javascript",
+                  "code": "function b64(str){var chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';var out='';var i=0;while(i<str.length){var c1=str.charCodeAt(i++);var c2=str.charCodeAt(i++);var c3=str.charCodeAt(i++);var e1=c1>>2;var e2=((c1&3)<<4)|(c2>>4);var e3=((c2&15)<<2)|(c3>>6);var e4=c3&63;if(isNaN(c2)){e3=64;e4=64;}else if(isNaN(c3)){e4=64;}out+=chars.charAt(e1)+chars.charAt(e2)+(e3===64?'=':chars.charAt(e3))+(e4===64?'=':chars.charAt(e4));}return out;} var id=($workflow.input.razorpay_key_id||''); var secret=($workflow.input.razorpay_key_secret||''); return { authHeader: 'Basic ' + b64(id + ':' + secret) };",
+                  "arguments": "${{ \"$context\": $context, \"$workflow\": $workflow, \"$input\": $input }}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"build_auth\": $output } }" },
+              "metadata": { "activityType": "JsInvoke", "displayName": "Build RazorpayX Basic auth header", "fullName": "JsInvoke" }
+            }
+          },
+          {
+            "HttpRequest_Contact": {
+              "call": "UiPath.Http",
+              "with": {
+                "connector": "uipath-uipath-http",
+                "connectionId": "ImplicitConnection",
+                "connectionResourceId": "ImplicitConnection",
+                "method": "POST",
+                "endpoint": "/http-request",
+                "bodyParameters": {
+                  "authentication": "manual",
+                  "method": "POST",
+                  "url": "https://api.razorpay.com/v1/contacts",
+                  "headers": { "Content-Type": "application/json", "Authorization": "${$context.outputs.build_auth.authHeader}" },
+                  "body": "${JSON.stringify({ name: ($workflow.input.employee_name || $workflow.input.employee_email || 'Employee'), email: ($workflow.input.employee_email || ''), type: 'employee', reference_id: ($workflow.input.case_id || ''), notes: { expense_type: ($workflow.input.expense_type || ''), reason: ($workflow.input.reason || '') } })}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"create_contact\": $output } }" },
+              "metadata": {
+                "fullName": "Connector",
+                "activityType": "Connector",
+                "displayName": "RazorpayX - create contact",
+                "uiPathActivityTypeId": "5c4cc855-b42a-37e6-b910-de8588998fce",
+                "assemblyQualifiedName": "Connector",
+                "configuration": "{\"essentialConfiguration\":{\"connectorVersion\":\"\",\"executionType\":null,\"customFieldsRequestDetails\":null,\"instanceParameters\":{\"version\":\"1.0.0\",\"connectorKey\":\"uipath-uipath-http\",\"activityType\":\"Curated\",\"objectName\":\"http-request\",\"httpMethod\":\"POST\",\"operation\":null,\"eventOperation\":null,\"eventMode\":null,\"connectorObjects\":null,\"previewEndpoint\":null},\"objectName\":\"http-request\",\"operation\":null,\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/http-request\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_http-request\"}}"
+              }
+            }
+          },
+          {
+            "ExtractContact_1": {
+              "run": {
+                "script": {
+                  "language": "javascript",
+                  "code": "var r = $context.outputs.create_contact; var c = (r && r.content) ? r.content : {}; return { contact_id: (c.id || null) };",
+                  "arguments": "${{ \"$context\": $context, \"$workflow\": $workflow, \"$input\": $input }}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"extract_contact\": $output } }" },
+              "metadata": { "activityType": "JsInvoke", "displayName": "Extract contact_id", "fullName": "JsInvoke" }
+            }
+          },
+          {
+            "HttpRequest_FundAccount": {
+              "call": "UiPath.Http",
+              "with": {
+                "connector": "uipath-uipath-http",
+                "connectionId": "ImplicitConnection",
+                "connectionResourceId": "ImplicitConnection",
+                "method": "POST",
+                "endpoint": "/http-request",
+                "bodyParameters": {
+                  "authentication": "manual",
+                  "method": "POST",
+                  "url": "https://api.razorpay.com/v1/fund_accounts",
+                  "headers": { "Content-Type": "application/json", "Authorization": "${$context.outputs.build_auth.authHeader}" },
+                  "body": "${JSON.stringify({ contact_id: ($context.outputs.extract_contact ? $context.outputs.extract_contact.contact_id : ''), account_type: 'vpa', vpa: { address: ($workflow.input.employee_vpa || 'gaurav.kumar@exampleupi') } })}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"create_fund\": $output } }" },
+              "metadata": {
+                "fullName": "Connector",
+                "activityType": "Connector",
+                "displayName": "RazorpayX - create fund account (VPA)",
+                "uiPathActivityTypeId": "5c4cc855-b42a-37e6-b910-de8588998fce",
+                "assemblyQualifiedName": "Connector",
+                "configuration": "{\"essentialConfiguration\":{\"connectorVersion\":\"\",\"executionType\":null,\"customFieldsRequestDetails\":null,\"instanceParameters\":{\"version\":\"1.0.0\",\"connectorKey\":\"uipath-uipath-http\",\"activityType\":\"Curated\",\"objectName\":\"http-request\",\"httpMethod\":\"POST\",\"operation\":null,\"eventOperation\":null,\"eventMode\":null,\"connectorObjects\":null,\"previewEndpoint\":null},\"objectName\":\"http-request\",\"operation\":null,\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/http-request\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_http-request\"}}"
+              }
+            }
+          },
+          {
+            "ExtractFund_1": {
+              "run": {
+                "script": {
+                  "language": "javascript",
+                  "code": "var r = $context.outputs.create_fund; var c = (r && r.content) ? r.content : {}; return { fund_account_id: (c.id || null) };",
+                  "arguments": "${{ \"$context\": $context, \"$workflow\": $workflow, \"$input\": $input }}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"extract_fund\": $output } }" },
+              "metadata": { "activityType": "JsInvoke", "displayName": "Extract fund_account_id", "fullName": "JsInvoke" }
+            }
+          },
+          {
+            "HttpRequest_Payout": {
+              "call": "UiPath.Http",
+              "with": {
+                "connector": "uipath-uipath-http",
+                "connectionId": "ImplicitConnection",
+                "connectionResourceId": "ImplicitConnection",
+                "method": "POST",
+                "endpoint": "/http-request",
+                "bodyParameters": {
+                  "authentication": "manual",
+                  "method": "POST",
+                  "url": "https://api.razorpay.com/v1/payouts",
+                  "headers": { "Content-Type": "application/json", "Authorization": "${$context.outputs.build_auth.authHeader}" },
+                  "body": "${JSON.stringify({ account_number: ($workflow.input.razorpay_account_number || ''), fund_account_id: ($context.outputs.extract_fund ? $context.outputs.extract_fund.fund_account_id : ''), amount: Math.round(($workflow.input.amount || 0) * 100), currency: ($workflow.input.currency || 'INR'), mode: 'UPI', purpose: 'payout', queue_if_low_balance: true, reference_id: ($workflow.input.case_id || ''), narration: 'Reimbursement Payout' })}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"create_payout\": $output } }" },
+              "metadata": {
+                "fullName": "Connector",
+                "activityType": "Connector",
+                "displayName": "RazorpayX - create payout (INR, UPI)",
+                "uiPathActivityTypeId": "5c4cc855-b42a-37e6-b910-de8588998fce",
+                "assemblyQualifiedName": "Connector",
+                "configuration": "{\"essentialConfiguration\":{\"connectorVersion\":\"\",\"executionType\":null,\"customFieldsRequestDetails\":null,\"instanceParameters\":{\"version\":\"1.0.0\",\"connectorKey\":\"uipath-uipath-http\",\"activityType\":\"Curated\",\"objectName\":\"http-request\",\"httpMethod\":\"POST\",\"operation\":null,\"eventOperation\":null,\"eventMode\":null,\"connectorObjects\":null,\"previewEndpoint\":null},\"objectName\":\"http-request\",\"operation\":null,\"packageVersion\":\"1.0.0\",\"httpMethod\":\"POST\",\"path\":\"/http-request\",\"unifiedTypesCompatible\":true,\"savedJitInputFieldId\":\"in_http-request\"}}"
+              }
+            }
+          },
+          {
+            "BuildOutput_1": {
+              "run": {
+                "script": {
+                  "language": "javascript",
+                  "code": "var p = ($context.outputs.create_payout && $context.outputs.create_payout.content) ? $context.outputs.create_payout.content : {}; var status = (p.status || 'unknown'); var now = new Date(); return { case_id: ($workflow.input.case_id || ''), erp_system: 'RazorpayX', contact_id: ($context.outputs.extract_contact ? $context.outputs.extract_contact.contact_id : null), fund_account_id: ($context.outputs.extract_fund ? $context.outputs.extract_fund.fund_account_id : null), payout_id: (p.id || null), payout_status: status, payment_status: ((status === 'processed' || status === 'processing' || status === 'queued') ? 'payout_initiated' : 'payout_failed'), amount: ($workflow.input.amount || 0), currency: ($workflow.input.currency || 'INR'), reference_id: ($workflow.input.case_id || ''), submitted_at: now.toISOString() };",
+                  "arguments": "${{ \"$context\": $context, \"$workflow\": $workflow, \"$input\": $input }}"
+                }
+              },
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"build_output\": $output } }" },
+              "metadata": { "activityType": "JsInvoke", "displayName": "Build Stage 5a payout output", "fullName": "JsInvoke" }
+            }
+          },
+          {
+            "Response_1": {
+              "response": "${$context.outputs.build_output}",
+              "markJobAsFailed": false,
+              "then": "end",
+              "export": { "as": "{ ...$context, outputs: { ...$context?.outputs, \"Response_1\": $output } }" },
+              "metadata": { "activityType": "Response", "displayName": "Return Stage 5a payout output", "fullName": "Response" }
+            }
+          }
+        ],
+        "metadata": { "activityType": "Sequence", "displayName": "Sequence", "fullName": "Sequence" }
+      }
+    }
+  ],
+  "evaluate": { "mode": "strict", "language": "javascript" }
+}
