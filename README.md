@@ -144,6 +144,7 @@ The field is `expense_type` (not `expense_type_confirmed`); the policy stage rou
 
 ## ✅ What's validated
 
+- **Stage 1/2** — email intake + receipt extraction (Document Understanding) ran Successful on serverless; the intake → bucket → extraction → `out_JSON` chain executes end-to-end.
 - **Stage 3** — smoke + edge eval sets pass; live cloud job Successful.
 - **Stage 4** — routing scenarios correct.
 - **Stage 5a** — **real Stripe test-mode payout** (PaymentIntent `succeeded`).
